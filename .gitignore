@@ -1,0 +1,4 @@
+out*
+*.lammps
+*.traj
+*.data
