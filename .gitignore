@@ -3,4 +3,4 @@ out*
 slurm*.out
 traj.dat
 submit.sh
-
+trajectory.dat
