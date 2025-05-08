@@ -1,4 +1,6 @@
 out*
 *.lammps
-*.traj
-*.data
+slurm*.out
+traj.dat
+submit.sh
+
