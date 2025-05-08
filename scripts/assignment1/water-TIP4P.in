@@ -1,0 +1,39 @@
+units real
+atom_style full
+atom_modify map array
+
+variable finalT equal 1000
+variable steps equal ${finalT}*100
+
+read_data ice4.data
+
+mass 1 1.008
+mass 2 1.008
+mass 3 1.0e-100
+mass 4 15.9994
+
+set type 1 charge 0.520
+set type 2 charge 0.520
+set type 3 charge -1.040
+set type 4 charge 0.0
+
+pair_style lj/cut/coul/cut 8.0
+pair_coeff 1 1 0.0    1.0
+pair_coeff 2 2 0.0    1.0
+pair_coeff 3 3 0.0    1.0
+pair_coeff 4 4 0.1550 3.1536
+
+neigh_modify exclude molecule/intra all
+
+timestep 0.3
+velocity all create 0.1 5463576
+fix integrate all rigid/nvt/small molecule temp 0.1 ${finalT} 100.0
+
+thermo_style custom step temp press etotal density pe ke
+thermo 100
+
+dump mydump all custom 100 traj.dat id type x y z
+dump_modify mydump sort id
+
+run ${steps}
+write_data tip4p-final.data nocoeff
