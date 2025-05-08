@@ -1,0 +1,83 @@
+### Adapted from Eric N. Hahn original script ###
+### ericnhahn@gmail.com ###
+### crumpling of a single graphene sheet ###
+
+#--------------Initialize Simulation--------------------------
+
+dimension	3
+units           metal
+atom_style      atomic
+
+#--------------Create Atoms-----------------------------------
+
+boundary	p p p
+
+variable sixth equal "1/6"
+variable twothirds equal "2/3"
+variable alattice equal "2.4595"
+variable a1lattice equal "1"
+variable a2lattice equal "1.73203"
+lattice custom ${alattice} a1 ${a1lattice} 0  0  a2 0 ${a2lattice} 0 basis 0 0 0  basis 0.5 ${sixth} 0 basis 0.5 0.5 0 basis 0 ${twothirds} 0
+
+variable boxside equal 100                                         #this defines how large the structure will be. Increase it at your own risk.
+variable xside equal "round(v_boxside/v_a1lattice/v_alattice/2)"   #round ensures that we get complete unit cells
+variable yside equal "round(v_boxside/v_a2lattice/v_alattice/2)"
+
+region	box block  -${xside} ${xside} -${yside} ${yside} -3 3 units lattice
+region	graphene block  -${xside} ${xside} -${yside} ${yside} 0 0.1 units lattice
+
+create_box	1 box
+create_atoms	1 region graphene 
+mass * 12.011
+
+#--------------Define Interatomic Potential-------------------
+
+pair_style airebo/morse 3.0
+pair_coeff * * ../CH.airebo-m C
+
+compute 3 all pe/atom
+compute 4 all stress/atom NULL pair
+
+timestep 0.001
+
+#---------Run the simulation for thermal equilibration--------
+
+velocity all create 178 4928459 dist gaussian
+fix integration all npt temp 298 298 .4 x 0.0 0.0 .5 y 0.0 0.0 .5
+fix bp all balance 250 1 shift z 10 1
+
+thermo 100
+thermo_style custom step pe ke etotal temp lx ly lz press atoms
+
+dump mydump all custom 100 trajectory.dat id x y z vx vy vz c_3 c_4[1] c_4[2] c_4[3] #note that pe/atom and stress components are saved to the dump file, you can see them in Ovito!
+dump_modify mydump sort id
+
+run 1000
+
+write_data graphene_flat.data
+
+#-------------Run the simulation for confinement -----------------
+
+unfix integration
+change_box all boundary s s s
+fix nve all nve
+
+#calculating radius of bounding sphere
+variable r0 equal (ylo^2+xlo^2+zlo^2)^0.5
+variable r0fix equal ceil(${r0})                                     
+print "The starting radius of the compressing sphere is ~${r0fix} A"
+
+#creating a shrinking indenter around the graphene sheet
+variable rate equal 1.25      #A/ps
+variable deltat equal "dt"
+variable radius equal "v_r0fix-step*dt*v_rate"
+
+variable finalrad equal 20
+variable numberofsteps equal round((${r0fix}-${finalrad})/(${deltat}*${rate}))
+print "running ${numberofsteps} steps to reach a final radius of ~${finalrad} A" 
+
+# fix constrain all indent 1 sphere 0 0 0 v_radius side in units box              #key command to crumple the sheet!
+fix constrain all indent 2 cylinder x -${yside} 0 v_radius side in units box
+run ${numberofsteps}
+
+write_data graphene_crumpled.data
