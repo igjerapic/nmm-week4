@@ -1,0 +1,36 @@
+units real
+atom_style full
+
+variable finalT equal 1000
+variable steps equal ${finalT}*100
+
+read_data ice3.data
+
+set type 1 charge 0.417
+set type 2 charge -0.834
+
+pair_style lj/cut/coul/cut 8.0
+pair_coeff 1 1 0.0    1.0
+pair_coeff 2 2 0.1521 3.1507
+
+bond_style zero
+bond_coeff 1 0.9574
+
+angle_style zero
+angle_coeff 1 104.52
+
+fix rigid all shake 0.001 10 10000 b 1 a 1
+
+reset_timestep 0
+timestep 1.0
+velocity all create 0.1 5463576
+fix integrate all nvt temp 0.1 ${finalT} 100.0
+
+thermo_style custom step temp press etotal pe
+
+thermo 100
+dump mydump all custom 100 traj.dat id type x y z
+dump_modify mydump sort id
+
+run ${steps}
+write_data final_tip3p.data nocoeff
