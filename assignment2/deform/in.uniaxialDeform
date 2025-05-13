@@ -33,7 +33,7 @@ mass * 12.011
 #--------------Define Interatomic Potential-------------------
 
 pair_style airebo/morse 3.0
-pair_coeff * * CH.airebo-m C
+pair_coeff * * ../CH.airebo-m C
 
 compute 3 all pe/atom
 compute 4 all stress/atom NULL pair
