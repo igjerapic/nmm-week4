@@ -52,20 +52,24 @@ thermo_style custom step pe ke etotal temp lx ly lz press atoms
 dump mydump all custom 100 trajectory.dat id x y z vx vy vz c_3 c_4[1] c_4[2] c_4[3] #note that pe/atom and stress components are saved to the dump file, you can see them in Ovito!
 dump_modify mydump sort id
 
-run 1000
+# run 1000
+run 100
 
 write_data graphene_flat.data
 
 #-------------Run the simulation for extension -----------------
 
 unfix integration
-change_box all boundary s s s
+change_box all boundary p s s
 fix nve all nve
 
 # Creating uniaxial extention to graphene sheet
-variable rate equal 0.001   # shear strain in 1/ps
+variable finalratio equal 2
+variable rate equal 0.001
+variable numberofsteps equal "(v_finalratio - 1) / v_rate"
 
-fix extension all deform 1 x erate v_rate remap x  # remapped set to positions not velocities
+print "Deforming box in x direction from L(t) = L0 (1 + 0.001 * dt) for ${numberofsteps} steps"
+fix extension all deform 1 x erate ${rate} remap x  # remapped set to positions not velocities
 
 run ${numberofsteps}
 
