@@ -1,5 +1,6 @@
 out*
-*.lammps
+out.lammps
+log.lammps
 slurm*.out
 traj.dat
 submit.sh
