@@ -1,0 +1,53 @@
+# LAMMPS input file
+
+variable    T equal 300
+variable    frc equal 2e-4  #force to be applied to the water molecule
+
+units       real
+atom_style  full
+bond_style  harmonic
+angle_style harmonic
+dihedral_style  opls
+improper_style  harmonic
+boundary    p p p
+pair_style      lj/cut/tip4p/long 1 2 1 1 0.105 10.0
+kspace_style    pppm/tip4p 1.0e-4
+pair_modify mix arithmetic tail yes
+special_bonds   lj/coul 0.0 0.0 0.5 angle yes
+
+read_data   channel.data
+include     PARAM.lammps       #file containing all force field parameters
+
+set type 1 charge -1.040
+set type 2 charge  0.520
+
+group       water type 1 2
+group       Car type 3
+
+fix     myshk water shake 1.0e-4 200 0 b 1 a 1
+fix     mynve all nve
+
+compute     ctN water temp/partial 0 1 1 # only thermalise the water using ddl normal to the direction of the flow
+fix     myber1 water temp/berendsen ${T} ${T} 100
+fix_modify  myber1 temp ctN
+
+compute     ctM Car temp
+fix     myber2 Car temp/berendsen ${T} ${T} 100
+fix_modify  myber2 temp ctM
+
+#pushing water
+fix         kick water addforce ${frc} 0.0 0.0
+
+#preventing graphene from drifting
+fix         mymum Car momentum 1 linear 1 1 1  
+fix         myrec Car recenter NULL NULL INIT
+
+timestep    2.0
+thermo      500
+
+run     1000 #equilibration
+
+dump        dump_lin all custom 500 traj.dat id type xu yu zu vx vy vz  #linear dump
+dump_modify dump_lin sort id
+
+run     10000 #production
