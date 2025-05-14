@@ -62,15 +62,13 @@ unfix integration
 fix nve all nve
 
 # Creating uniaxial extention to graphene sheet
-# variable finalratio equal 2
-# variable rate equal 0.001
-# variable detlat equal "dt"
-# variable numberofsteps equal "(v_finalratio - 1) / v_rate"
-
-variable numberofsteps equal 2000
+variable finalstrain equal 0.2
 variable rate equal 0.001
+variable deltat equal "dt"
+variable numberofsteps equal round(${finalstrain}/(${rate}*${deltat}))
+
 print "Deforming box in x direction from L(t) = L0 (1 + 0.001 * dt) for ${numberofsteps} steps"
-fix extension all deform 1 x erate ${rate} remap x units box  # remapped set to positions not velocities
+fix extension all deform 1 x erate ${rate} y volume z volume remap v units box  # remapped set to positions not velocities
 
 run ${numberofsteps}
 
