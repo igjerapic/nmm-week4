@@ -6,3 +6,8 @@ traj.dat
 submit.sh
 trajectory.dat
 *.data
+ice*_RDF/
+*.png
+*.pkl
+*.svg
+*.ovito
