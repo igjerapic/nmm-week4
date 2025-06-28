@@ -11,3 +11,5 @@ ice*_RDF/
 *.pkl
 *.svg
 *.ovito
+performance
+.vscode
