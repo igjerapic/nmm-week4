@@ -3,13 +3,25 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+from cycler import cycler
 
 from ovito.data import *
 from ovito.io import *
 from ovito.modifiers import *
 from ovito.pipeline import *
 
-
+plt.style.use("/home/ilija/uni/nanoscale/nmm-week4/scripts/default.mplstyle")
+plt.rcParams['axes.prop_cycle'] = plt.cycler(cycler(color = ['#332288', 
+                                    '#CC6677',
+                                    '#88CCEE',
+                                    '#DDCC77', 
+                                    '#117733', 
+                                    '#882255', 
+                                    '#44AA99', 
+                                    '#999933', 
+                                    '#AA4499',
+                                    '#DDDDDD'
+                                ]))
 def main():
     # Load the data file:
     pipeline = import_file("channel.data", atom_style="full")
@@ -63,7 +75,7 @@ def main():
     plt.figure(figsize=(4, 4))
     plt.plot(z_centers, average_mass)
     plt.xlabel("z-position")
-    plt.ylabel("Average mass")
+    plt.ylabel("Average mass (g/mol)")
     plt.title("Mass profile along z-axis")
     plt.tight_layout()
     plt.savefig("mass_profile.png")

@@ -7,8 +7,9 @@ from cycler import cycler
 
 # plt.style.use('../scripts/default.mplstyle')
 
-plt.rcParams['axes.prop_cycle'] = plt.cycler(cycler(color = ['#CC6677', 
-                                    '#332288', 
+plt.style.use("/home/ilija/uni/nanoscale/nmm-week4/scripts/default.mplstyle")
+plt.rcParams['axes.prop_cycle'] = plt.cycler(cycler(color = ['#332288', 
+                                    '#CC6677',
                                     '#88CCEE',
                                     '#DDCC77', 
                                     '#117733', 
@@ -23,7 +24,7 @@ def main():
     topology = "channel.data"
     traj = "traj.dat"
 
-    u = bsa.setup_universe(topology, traj, dt=0.002)
+    u = bsa.setup_universe(topology, traj, dt=2.0)
 
     # Set up binning along z-axis, values taken to match mass profile 
     bin_count = 50
@@ -47,25 +48,21 @@ def main():
         for j in range(1, len(z_edges)):
             mask = (positions[:,-1] >= z_edges[j - 1]) & (positions[:,-1] <= z_edges[j])
             n_atoms[j - 1] += len(positions[mask])
-
             for velocity in velocities[mask]:
-                accumulated_velocity[j - 1] += np.linalg.norm(velocity)
-            
+                accumulated_velocity[j - 1] += np.linalg.norm(velocity)   
+
     # Average accumulated speeds by total number of atoms 
     for idx in np.nonzero(n_atoms):
         average_vel[idx] = accumulated_velocity[idx] / n_atoms[idx]
-
-    # converting to meters per second
-    average_vel = average_vel * 10**5
 
     # Plotting
     plt.figure(figsize=(4, 4))
     plt.plot(z_centers, average_vel)
     plt.xlabel("z-position")
-    plt.ylabel("Average speed")
+    plt.ylabel("Average velocity ($\AA$/fs)")
     plt.title("Velocity profile along z-axis")
     plt.tight_layout()
-    plt.savefig("velocity_profile.png")
+    plt.savefig("velocity_profile.png", dpi = 300)
 
 if __name__=="__main__":
     main()
