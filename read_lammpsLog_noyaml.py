@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from cycler import cycler
 import lammps_logfile
 
-plt.style.use('../../scripts/default.mplstyle')
+#plt.style.use('../../scripts/default.mplstyle')
 
 plt.rcParams['axes.prop_cycle'] = plt.cycler(cycler(color = ['#332288', 
                                     '#CC6677',
@@ -27,12 +27,11 @@ def main():
     df = pd.DataFrame(log.partial_logs[-1])
     df.to_pickle("thermo.pkl")
     
-    keywords = [["PotEng"],]
-    labels = ["Potential Energy  (kcal/mol)",]
+    keywords = [["Temp"], ["Press"], ['TotEng']]
+    labels = ["Temp ($\epsilon/k_B)$", "Press ($\epsilon/\sigma^3$)", 'Total Energy ($\epsilon$)']
     for y, ylabel in zip(keywords, labels):
         fig = df.plot(x="Step", y=y, ylabel=ylabel)
         plt.tight_layout()
-        plt.savefig(f"{y[0]}-vs-step.png", dpi = 300)
         plt.show()
 if __name__ == '__main__':
     main()
